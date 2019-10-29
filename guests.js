@@ -20,14 +20,30 @@ router.use(bodyParser.json());
 // 	return datastore.save({"key":key, "data":new_guest}).then(() => {return key});
 // }
 
-function post_load(weight, content, delivery_date){                                                 //add load 
+function post_load(weight, content, delivery_date){                                                 //add load
     var key = datastore.key(LOAD);
-	const new_load = {"weight": weight, "content": content, "delivery_date": delivery_date};
+	const new_load = {"weight": weight, "carrier": null, "content": content, "delivery_date": delivery_date};
 	return datastore.save({"key":key, "data":new_load}).then(() => {return key});
 }
 
-function get_guests(req){
-    var q = datastore.createQuery(GUEST).limit(2);
+unction get_that_load(loadID){                                                              //view specified load
+    const key = datastore.key([LOAD, parseInt(loadID,10)]);
+    const loadQuery = datastore.createQuery(LOAD).filter('__key__', '=', key);
+    return datastore.runQuery(loadQuery).then(results => {
+      // console.log(results[0].map(fromDatastore));
+      var resultingLoad = results[0].map(ds.fromDatastore);
+      if(resultingLoad[0] != null){
+        resultingLoad[0].self = "http://localhost:8080/loads/" + loadID;     //needed change
+	      return resultingLoad[0];
+      }
+      else {
+        return null;
+      }
+    });
+}
+
+function get_loads(req){
+    var q = datastore.createQuery(LOAD).limit(3);
     const results = {};
     var prev;
     if(Object.keys(req.query).includes("cursor")){
@@ -64,7 +80,7 @@ function delete_guest(id){
 /* ------------- Begin Controller Functions ------------- */
 
 router.get('/', function(req, res){
-    const guests = get_guests(req)
+    const loads = get_loads(req)
 	.then( (guests) => {
         res.status(200).json(guests);
     });

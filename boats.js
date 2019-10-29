@@ -17,7 +17,7 @@ router.use(bodyParser.json());
 /* ------------- Begin Lodging Model Functions ------------- */
 function post_boat(name, type, length){                                                   //add Boat
   var key = datastore.key(BOAT);
-	const new_boat = {"name": name, "type": type, "length": length};
+	const new_boat = {"name": name, "type": type, "length": length, "load": null};
 	return datastore.save({"key":key, "data":new_boat}).then(() => {return key});
 }
 
@@ -49,7 +49,7 @@ function get_that_boat(boatID){                                                 
 // 		});
 // }
 
-function get_boats(req){                                                            //old
+function get_boats(req){                                                            //view all boats
     var q = datastore.createQuery(BOAT).limit(3);
     const results = {};
     if(Object.keys(req.query).includes("cursor")){
@@ -84,6 +84,12 @@ function put_lodging(id, name, description, price){
     const key = datastore.key([LODGING, parseInt(id,10)]);
     const lodging = {"name": name, "description": description, "price": price};
     return datastore.save({"key":key, "data":lodging});
+}
+
+function patch_boat(id, name, type, length){                                                  //edit boat
+    const key = datastore.key([BOAT, parseInt(id,10)]);
+    const updated_boat = {"name": name, "type": type, "length": length};
+    return datastore.save({"key":key, "data":updated_boat}).then(() => {return key});
 }
 
 function delete_boat(id){
